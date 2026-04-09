@@ -19,7 +19,11 @@ export const useRegister = () => {
     const navigate = useNavigate();
     return useMutation({
         mutationFn: registerUser,
-        onSuccess: () => navigate('/itinerario'),
+        onSuccess: (data) => {
+            localStorage.setItem('access_token', data.access);   // ← faltaba
+            localStorage.setItem('refresh_token', data.refresh); // ← faltaba
+            navigate('/itinerario');
+        },
     })
 }
 

@@ -4,7 +4,8 @@ import Itinerario from "./pages/Itinerario";
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("access_token");
-  return token ? children : <Navigate to="/login" />;
+  const refresh = localStorage.getItem("refresh_token");
+  return (token && refresh) ? children : <Navigate to="/login" />;
 };
 
 export default function App() {
