@@ -40,13 +40,12 @@ api.interceptors.response.use(
         localStorage.setItem('access_token', data.access)
         original.headers.Authorization = `Bearer ${data.access}`
         return api(original)
-      } catch {
-        // Solo borrar si el refresh token realmente es inválido (401)
-        if (error.response?.status === 401) {
+      } catch (refreshError) {
+        if (refreshError.response?.status === 401) {
           localStorage.clear()
-          window.location.href = '/login'
+          window.location.replace('/login')
         }
-        return Promise.reject(error)
+        return Promise.reject(refreshError)
       }
     }
 
