@@ -4,7 +4,6 @@ const api = axios.create({
   baseURL: 'https://icard-backend.onrender.com/api',
 })
 
-// Agrega el access token a cada request
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('access_token')
   if (token) {
@@ -13,11 +12,15 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Refresh automático si el token expira
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config
+
+    // Evitar loop en la ruta de refresh
+    if (original.url?.includes('/auth/token/refresh/')) {
+      return Promise.reject(error)  // ← NO borrar tokens aquí
+    }
 
     if (error.response?.status === 401 && !original._retry) {
       original._retry = true
@@ -38,8 +41,11 @@ api.interceptors.response.use(
         original.headers.Authorization = `Bearer ${data.access}`
         return api(original)
       } catch {
-        localStorage.clear()
-        window.location.href = '/login'
+        // Solo borrar si el refresh token realmente es inválido (401)
+        if (error.response?.status === 401) {
+          localStorage.clear()
+          window.location.href = '/login'
+        }
         return Promise.reject(error)
       }
     }
